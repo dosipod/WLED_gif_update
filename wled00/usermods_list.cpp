@@ -204,6 +204,11 @@
 #ifdef USERMOD_STAIRCASE_WIPE
 #include "../usermods/stairway_wipe_basic/stairway-wipe-usermod-v2.h"
 #endif
+
+#ifdef USERMOD_TTGO_TDISPLAY_OUTPUT
+#include "../usermods/usermod_v2_TTGO-TDisplay_output/usermod.h"
+#endif
+
 void registerUsermods()
 {
 /*
@@ -386,5 +391,9 @@ void registerUsermods()
 
   #ifdef USERMOD_STAIRCASE_WIPE
   usermods.add(new StairwayWipeUsermod());
+  #endif
+
+  #ifdef USERMOD_TTGO_TDISPLAY_OUTPUT
+  usermods.add(new TTGOTDisplayOutputUsermod());
   #endif
 }
