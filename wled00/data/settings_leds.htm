@@ -28,19 +28,6 @@
 		function hasCCT(t) { return t == 20 || t == 21 || t == 42 || t == 45 || t == 28 || t == 32; }
 
 		function isHub75(t) { return t >= 100 && t <= 110; }                // is Hub75 type
-		function hideHub75() {
-		var s = d.getElementsByTagName("select");
-			for (i=0; i<s.length; i++) {
-				// is the field a LED type?
-				if (s[i].name.substring(0,2)=="LT") {
-					var selectobject = s[i];
-					for (var j=(selectobject.length - 1); j > 0; j--) {
-						var t = parseInt(selectobject.options[j].value);
-						if(t >= 100 && t <= 110) selectobject.remove(j);
-					}
-				}
-			}
-		}
 		// https://www.educative.io/edpresso/how-to-dynamically-load-a-js-file-in-javascript
 		function loadJS(FILE_URL, async = true) {
 			let scE = d.createElement("script");

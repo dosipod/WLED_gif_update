@@ -828,7 +828,7 @@ void BusNetwork::cleanup() {
 
 BusHub75Matrix::BusHub75Matrix(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWhite) {
 
-  mxconfig.double_buff = false; // <------------- Turn on double buffer
+  mxconfig.double_buff = true; // <------------- Turn on double buffer
 
   switch(bc.type) {
     case 101:
@@ -1012,6 +1012,40 @@ void BusHub75Matrix::deallocatePins() {
   pinManager.deallocatePin(mxconfig.gpio.e, PinOwner::HUB75);
 
 }
+
+std::vector<LEDType> BusHub75Matrix::getLEDTypes() {
+  std::vector<LEDType> result;
+  LEDType ledType;
+
+  ledType.type = "V";
+
+  ledType.id = 101;
+  ledType.name = "Hub75Matrix 32x32";
+  result.push_back(ledType);
+
+  ledType.id = 102;
+  ledType.name = "Hub75Matrix 64x32";
+  result.push_back(ledType);
+
+  ledType.id = 103;
+  ledType.name = "Hub75Matrix 64x64";
+  result.push_back(ledType);
+
+  // ledType.id = 104;
+  // ledType.name = "Hub75Matrix 32x32 (Outdoor 8S)";
+  // result.push_back(ledType);
+
+  // ledType.id = 105;
+  // ledType.name = "Hub75Matrix 64x32 (Outdoor 8S)";
+  // result.push_back(ledType);
+
+  // ledType.id = 106;
+  // ledType.name = "Hub75Matrix 64x64 (Outdoor 16S)";
+  // result.push_back(ledType);
+
+  return result;
+}
+
 #endif
 // ***************************************************************************
 
@@ -1076,6 +1110,11 @@ String BusManager::getLEDTypes() {
 
   busTypes = BusNetwork::getLEDTypes();
   types.insert(types.end(), busTypes.begin(), busTypes.end());
+
+#ifdef WLED_ENABLE_HUB75MATRIX
+  busTypes = BusHub75Matrix::getLEDTypes();
+  types.insert(types.end(), busTypes.begin(), busTypes.end());
+#endif
 
   for(int t = 0; t < types.size(); t++) {
     LEDType type = types.at(t);

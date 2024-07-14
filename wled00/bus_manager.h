@@ -369,6 +369,7 @@ class BusHub75Matrix : public Bus {
 
     bool hasRGB() { return true; }
     bool hasWhite() { return false; }
+    static std::vector<LEDType> getLEDTypes();
 
     void setPixelColor(uint16_t pix, uint32_t c);
 
