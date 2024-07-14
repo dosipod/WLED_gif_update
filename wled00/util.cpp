@@ -156,7 +156,7 @@ bool oappendi(int i)
 
 bool oappend(const char* txt)
 {
-  uint16_t len = strlen(txt);
+  unsigned len = strlen(txt);
   if ((obuf == nullptr) || (olen + len >= SETTINGS_STACK_BUF_SIZE)) { // sanity checks
 #ifdef WLED_DEBUG
     DEBUG_PRINT(F("oappend() buffer overflow. Cannot append "));
@@ -175,7 +175,7 @@ void prepareHostname(char* hostname)
 {
   sprintf_P(hostname, PSTR("wled-%*s"), 6, escapedMac.c_str() + 6);
   const char *pC = serverDescription;
-  uint8_t pos = 5;          // keep "wled-"
+  unsigned pos = 5;          // keep "wled-"
   while (*pC && pos < 24) { // while !null and not over length
     if (isalnum(*pC)) {     // if the current char is alpha-numeric append it to the hostname
       hostname[pos] = *pC;
@@ -197,7 +197,7 @@ void prepareHostname(char* hostname)
 
 bool isAsterisksOnly(const char* str, byte maxLen)
 {
-  for (byte i = 0; i < maxLen; i++) {
+  for (unsigned i = 0; i < maxLen; i++) {
     if (str[i] == 0) break;
     if (str[i] != '*') return false;
   }
@@ -215,7 +215,7 @@ bool requestJSONBufferLock(uint8_t module)
   }
   unsigned long now = millis();
 
-  while (jsonBufferLock && millis()-now < 100) delay(1); // wait for fraction for buffer lock
+  while (jsonBufferLock && millis()-now < 250) delay(1); // wait for fraction for buffer lock
 
   if (jsonBufferLock) {
     DEBUG_PRINT(F("ERROR: Locking JSON buffer failed! (still locked by "));
@@ -228,7 +228,6 @@ bool requestJSONBufferLock(uint8_t module)
   DEBUG_PRINT(F("JSON buffer locked. ("));
   DEBUG_PRINT(jsonBufferLock);
   DEBUG_PRINTLN(")");
-  fileDoc = pDoc;  // used for applying presets (presets.cpp)
   pDoc->clear();
   return true;
 }
@@ -239,7 +238,6 @@ void releaseJSONBufferLock()
   DEBUG_PRINT(F("JSON buffer released. ("));
   DEBUG_PRINT(jsonBufferLock);
   DEBUG_PRINTLN(")");
-  fileDoc = nullptr;
   jsonBufferLock = 0;
 }
 
@@ -265,15 +263,15 @@ uint8_t extractModeName(uint8_t mode, const char *src, char *dest, uint8_t maxLe
     } else return 0;
   }
 
-  if (src == JSON_palette_names && mode > GRADIENT_PALETTE_COUNT) {
-    snprintf_P(dest, maxLen, PSTR("~ Custom %d~"), 255-mode);
+  if (src == JSON_palette_names && mode > (GRADIENT_PALETTE_COUNT + 13)) {
+    snprintf_P(dest, maxLen, PSTR("~ Custom %d ~"), 255-mode);
     dest[maxLen-1] = '\0';
     return strlen(dest);
   }
 
-  uint8_t qComma = 0;
+  unsigned qComma = 0;
   bool insideQuotes = false;
-  uint8_t printedChars = 0;
+  unsigned printedChars = 0;
   char singleJsonSymbol;
   size_t len = strlen_P(src);
 
@@ -310,11 +308,11 @@ uint8_t extractModeSlider(uint8_t mode, uint8_t slider, char *dest, uint8_t maxL
   if (mode < strip.getModeCount()) {
     String lineBuffer = FPSTR(strip.getModeData(mode));
     if (lineBuffer.length() > 0) {
-      int16_t start = lineBuffer.indexOf('@');
-      int16_t stop  = lineBuffer.indexOf(';', start);
+      unsigned start = lineBuffer.indexOf('@');
+      unsigned stop  = lineBuffer.indexOf(';', start);
       if (start>0 && stop>0) {
         String names = lineBuffer.substring(start, stop); // include @
-        int16_t nameBegin = 1, nameEnd, nameDefault;
+        unsigned nameBegin = 1, nameEnd, nameDefault;
         if (slider < 10) {
           for (size_t i=0; i<=slider; i++) {
             const char *tmpstr;
@@ -539,13 +537,13 @@ um_data_t* simulateSound(uint8_t simulationId)
   return um_data;
 }
 
-
+static const char s_ledmap_tmpl[] PROGMEM = "ledmap%d.json";
 // enumerate all ledmapX.json files on FS and extract ledmap names if existing
 void enumerateLedmaps() {
   ledMaps = 1;
   for (size_t i=1; i<WLED_MAX_LEDMAPS; i++) {
-    char fileName[33];
-    sprintf_P(fileName, PSTR("/ledmap%d.json"), i);
+    char fileName[33] = "/";
+    sprintf_P(fileName+1, s_ledmap_tmpl, i);
     bool isFile = WLED_FS.exists(fileName);
 
     #ifndef ESP8266
@@ -574,7 +572,7 @@ void enumerateLedmaps() {
           }
           if (!ledmapNames[i-1]) {
             char tmp[33];
-            snprintf_P(tmp, 32, PSTR("ledmap%d.json"), i);
+            snprintf_P(tmp, 32, s_ledmap_tmpl, i);
             len = strlen(tmp);
             ledmapNames[i-1] = new char[len+1];
             if (ledmapNames[i-1]) strlcpy(ledmapNames[i-1], tmp, 33);

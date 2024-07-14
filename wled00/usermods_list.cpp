@@ -53,6 +53,11 @@
   #include "../usermods/BME280_v2/usermod_bme280.h"
 #endif
 
+#ifdef USERMOD_BME68X
+  #include "../usermods/BME68X_v2/usermod_bme68x.h"
+#endif
+
+
 #ifdef USERMOD_FOUR_LINE_DISPLAY
   #include "../usermods/usermod_v2_four_line_display_ALT/usermod_v2_four_line_display_ALT.h"
 #endif
@@ -209,6 +214,26 @@
   #include "../usermods/stairway_wipe_basic/stairway-wipe-usermod-v2.h"
 #endif
 
+#ifdef USERMOD_MAX17048
+  #include "../usermods/MAX17048_v2/usermod_max17048.h"
+#endif
+
+#ifdef USERMOD_TETRISAI
+  #include "../usermods/TetrisAI_v2/usermod_v2_tetrisai.h"
+#endif
+
+#ifdef USERMOD_AHT10
+  #include "../usermods/AHT10_v2/usermod_aht10.h"
+#endif
+
+#ifdef USERMOD_INA226
+  #include "../usermods/INA226_v2/usermod_ina226.h"
+#endif
+
+#ifdef USERMOD_LD2410
+#include "../usermods/LD2410_v2/usermod_ld2410.h"
+#endif
+
 void registerUsermods()
 {
 /*
@@ -244,6 +269,10 @@ void registerUsermods()
 
   #ifdef USERMOD_BME280
   usermods.add(new UsermodBME280());
+  #endif
+
+  #ifdef USERMOD_BME68X
+  usermods.add(new UsermodBME68X());
   #endif
 
   #ifdef USERMOD_SENSORSTOMQTT
@@ -404,5 +433,25 @@ void registerUsermods()
 
   #ifdef USERMOD_STAIRCASE_WIPE
   usermods.add(new StairwayWipeUsermod());
+  #endif
+
+  #ifdef USERMOD_MAX17048
+  usermods.add(new Usermod_MAX17048());
+  #endif
+
+  #ifdef USERMOD_TETRISAI
+  usermods.add(new TetrisAIUsermod());
+  #endif
+
+  #ifdef USERMOD_AHT10
+  usermods.add(new UsermodAHT10());
+  #endif
+
+  #ifdef USERMOD_INA226
+  usermods.add(new UsermodINA226());
+  #endif
+  
+  #ifdef USERMOD_LD2410
+  usermods.add(new LD2410Usermod());
   #endif
 }
