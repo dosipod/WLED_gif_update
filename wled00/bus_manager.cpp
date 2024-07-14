@@ -377,6 +377,86 @@ void BusDigital::cleanup() {
   pinManager.deallocatePin(_pins[0], PinOwner::BusDigital);
 }
 
+std::vector<LEDType> BusDigital::getLEDTypes() {
+  std::vector<LEDType> result;
+  LEDType ledType;
+
+  ledType.type = "D";
+
+  ledType.id = 22;
+  ledType.name = "WS281x";
+  result.push_back(ledType);
+
+  ledType.id = 30;
+  ledType.name = "SK6812/WS2814 RGBW";
+  result.push_back(ledType);
+
+  ledType.id = 31;
+  ledType.name = "TM1814";
+  result.push_back(ledType);
+
+  ledType.id = 24;
+  ledType.name = "400kHz";
+  result.push_back(ledType);
+
+  ledType.id = 25;
+  ledType.name = "TM1829";
+  result.push_back(ledType);
+
+  ledType.id = 26;
+  ledType.name = "UCS8903";
+  result.push_back(ledType);
+
+  ledType.id = 27;
+  ledType.name = "APA106/PL9823";
+  result.push_back(ledType);
+
+  ledType.id = 33;
+  ledType.name = "TM1914";
+  result.push_back(ledType);
+
+  ledType.id = 28;
+  ledType.name = "FW1906 GRBCW";
+  result.push_back(ledType);
+
+  ledType.id = 29;
+  ledType.name = "UCS8904 RGBW";
+  result.push_back(ledType);
+
+  ledType.id = 32;
+  ledType.name = "WS2805 RGBCW";
+  result.push_back(ledType);
+
+  ledType.id = 19;
+  ledType.name = "WS2811 White";
+  result.push_back(ledType);
+
+
+  ledType.type = "2P";
+
+  ledType.id = 50;
+  ledType.name = "WS2801";
+  result.push_back(ledType);
+
+  ledType.id = 51;
+  ledType.name = "APA102";
+  result.push_back(ledType);
+
+  ledType.id = 52;
+  ledType.name = "LPD8806";
+  result.push_back(ledType);
+
+  ledType.id = 54;
+  ledType.name = "LPD6803";
+  result.push_back(ledType);
+
+  ledType.id = 53;
+  ledType.name = "PP9813";
+  result.push_back(ledType);
+
+  return result;
+}
+
 
 BusPwm::BusPwm(BusConfig &bc)
 : Bus(bc.type, bc.start, bc.autoWhite, 1, bc.reversed)
@@ -555,6 +635,43 @@ void BusPwm::deallocatePins() {
   #endif
 }
 
+std::vector<LEDType> BusPwm::getLEDTypes() {
+  std::vector<LEDType> result;
+  LEDType ledType;
+
+  ledType.id = 41;
+  ledType.name = "PWM White";
+  ledType.type = "A";
+  result.push_back(ledType);
+
+  ledType.id = 42;
+  ledType.name = "PWM CCT";
+  ledType.type = "AA";
+  result.push_back(ledType);
+
+  ledType.id = 43;
+  ledType.name = "PWM RGB";
+  ledType.type = "AAA";
+  result.push_back(ledType);
+
+  ledType.id = 44;
+  ledType.name = "PWM RGBW";
+  ledType.type = "AAAA";
+  result.push_back(ledType);
+
+  ledType.id = 45;
+  ledType.name = "PWM RGB+CCT";
+  ledType.type = "AAAAA";
+  result.push_back(ledType);
+
+  // ledType.id = 46;
+  // ledType.name = "PWM RGB+DCCT";
+  // ledType.type = "AAAAAA";
+  // result.push_back(ledType);
+
+  return result;
+}
+
 
 BusOnOff::BusOnOff(BusConfig &bc)
 : Bus(bc.type, bc.start, bc.autoWhite, 1, bc.reversed)
@@ -597,6 +714,17 @@ uint8_t BusOnOff::getPins(uint8_t* pinArray) {
   if (!_valid) return 0;
   pinArray[0] = _pin;
   return 1;
+}
+
+std::vector<LEDType> BusOnOff::getLEDTypes() {
+  std::vector<LEDType> result;
+  LEDType ledType;
+  ledType.id = 40;
+  ledType.name = "On/Off";
+  ledType.type = "";
+  result.push_back(ledType);
+  return result;
+
 }
 
 
@@ -657,6 +785,35 @@ uint8_t BusNetwork::getPins(uint8_t* pinArray) {
     pinArray[i] = _client[i];
   }
   return 4;
+}
+
+std::vector<LEDType> BusNetwork::getLEDTypes() {
+  std::vector<LEDType> result;
+  LEDType ledType;
+
+  ledType.type = "V";
+
+  ledType.id = 80;
+  ledType.name = "DDP RGB (network)";
+  result.push_back(ledType);
+
+  // ledType.id = 81";
+  // ledType.name = "E1.31 RGB (network)";
+  // result.push_back(ledType);
+
+  ledType.id = 82;
+  ledType.name = "Art-Net RGB (network)";
+  result.push_back(ledType);
+
+  ledType.id = 88;
+  ledType.name = "DDP RGBW (network)";
+  result.push_back(ledType);
+
+  ledType.id = 89;
+  ledType.name = "Art-Net RGBW (network)";
+  result.push_back(ledType);
+
+  return result;
 }
 
 void BusNetwork::cleanup() {
@@ -902,6 +1059,35 @@ int BusManager::add(BusConfig &bc) {
   return numBusses++;
 }
 
+String BusManager::getLEDTypes() {
+  std::vector<LEDType> types;
+  String json = "[";
+
+  std::vector<LEDType> busTypes;
+
+  busTypes = BusDigital::getLEDTypes();
+  types.insert(types.end(), busTypes.begin(), busTypes.end());
+
+  busTypes = BusOnOff::getLEDTypes();
+  types.insert(types.end(), busTypes.begin(), busTypes.end());
+
+  busTypes = BusPwm::getLEDTypes();
+  types.insert(types.end(), busTypes.begin(), busTypes.end());
+
+  busTypes = BusNetwork::getLEDTypes();
+  types.insert(types.end(), busTypes.begin(), busTypes.end());
+
+  for(int t = 0; t < types.size(); t++) {
+    LEDType type = types.at(t);
+    String id = String(type.id);
+    json += "{\"id\":"+id+",\"type\":\""+type.type+"\",\"name\":\""+type.name+"\"},";
+  }
+
+  json += "]";
+  return json;
+}
+
+
 void BusManager::useParallelOutput(void) {
   _parallelOutputs = 8; // hardcoded since we use NPB I2S x8 methods
   PolyBus::setParallelI2S1Output();
@@ -1054,6 +1240,7 @@ uint16_t BusManager::getTotalLength() {
   for (unsigned i=0; i<numBusses; i++) len += busses[i]->getLength();
   return len;
 }
+
 
 bool PolyBus::useParallelI2S = false;
 
