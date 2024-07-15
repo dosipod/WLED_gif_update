@@ -381,77 +381,80 @@ std::vector<LEDType> BusDigital::getLEDTypes() {
   std::vector<LEDType> result;
   LEDType ledType;
 
-  ledType.type = "D";
+  ledType.type = F("D");
+  ledType.config = F("{\"pins\":[\"Data GPIO\"]}");
 
   ledType.id = 22;
-  ledType.name = "WS281x";
+  ledType.name = F("WS281x");
   result.push_back(ledType);
 
   ledType.id = 30;
-  ledType.name = "SK6812/WS2814 RGBW";
+  ledType.name = F("SK6812/WS2814 RGBW");
   result.push_back(ledType);
 
   ledType.id = 31;
-  ledType.name = "TM1814";
+  ledType.name = F("TM1814");
   result.push_back(ledType);
 
   ledType.id = 24;
-  ledType.name = "400kHz";
+  ledType.name = F("400kHz");
   result.push_back(ledType);
 
   ledType.id = 25;
-  ledType.name = "TM1829";
+  ledType.name = F("TM1829");
   result.push_back(ledType);
 
   ledType.id = 26;
-  ledType.name = "UCS8903";
+  ledType.name = F("UCS8903");
   result.push_back(ledType);
 
   ledType.id = 27;
-  ledType.name = "APA106/PL9823";
+  ledType.name = F("APA106/PL9823");
   result.push_back(ledType);
 
   ledType.id = 33;
-  ledType.name = "TM1914";
+  ledType.name = F("TM1914");
   result.push_back(ledType);
 
   ledType.id = 28;
-  ledType.name = "FW1906 GRBCW";
+  ledType.name = F("FW1906 GRBCW");
   result.push_back(ledType);
 
   ledType.id = 29;
-  ledType.name = "UCS8904 RGBW";
+  ledType.name = F("UCS8904 RGBW");
   result.push_back(ledType);
 
   ledType.id = 32;
-  ledType.name = "WS2805 RGBCW";
+  ledType.name = F("WS2805 RGBCW");
   result.push_back(ledType);
 
   ledType.id = 19;
-  ledType.name = "WS2811 White";
+  ledType.name = F("WS2811 White");
   result.push_back(ledType);
 
 
-  ledType.type = "2P";
+  ledType.type = F("2P");
+  ledType.config = F("{\"pins\":[\"Data GPIO\",\"Clk GPIO\"]}");
+
 
   ledType.id = 50;
-  ledType.name = "WS2801";
+  ledType.name = F("WS2801");
   result.push_back(ledType);
 
   ledType.id = 51;
-  ledType.name = "APA102";
+  ledType.name = F("APA102");
   result.push_back(ledType);
 
   ledType.id = 52;
-  ledType.name = "LPD8806";
+  ledType.name = F("LPD8806");
   result.push_back(ledType);
 
   ledType.id = 54;
-  ledType.name = "LPD6803";
+  ledType.name = F("LPD6803");
   result.push_back(ledType);
 
   ledType.id = 53;
-  ledType.name = "PP9813";
+  ledType.name = F("PP9813");
   result.push_back(ledType);
 
   return result;
@@ -639,34 +642,38 @@ std::vector<LEDType> BusPwm::getLEDTypes() {
   std::vector<LEDType> result;
   LEDType ledType;
 
+  ledType.config = F("{\"pins\":[\"GPIO Pin\"]}"); 
+
   ledType.id = 41;
-  ledType.name = "PWM White";
-  ledType.type = "A";
+  ledType.name = F("PWM White");
+  ledType.type = F("A");
   result.push_back(ledType);
 
+  ledType.config = F("{\"pins\":[\"GPIO Pins\"]}"); 
+
   ledType.id = 42;
-  ledType.name = "PWM CCT";
-  ledType.type = "AA";
+  ledType.name = F("PWM CCT");
+  ledType.type = F("AA");
   result.push_back(ledType);
 
   ledType.id = 43;
-  ledType.name = "PWM RGB";
-  ledType.type = "AAA";
+  ledType.name = F("PWM RGB");
+  ledType.type = F("AAA");
   result.push_back(ledType);
 
   ledType.id = 44;
-  ledType.name = "PWM RGBW";
-  ledType.type = "AAAA";
+  ledType.name = F("PWM RGBW");
+  ledType.type = F("AAAA");
   result.push_back(ledType);
 
   ledType.id = 45;
-  ledType.name = "PWM RGB+CCT";
-  ledType.type = "AAAAA";
+  ledType.name = F("PWM RGB+CCT");
+  ledType.type = F("AAAAA");
   result.push_back(ledType);
 
   // ledType.id = 46;
-  // ledType.name = "PWM RGB+DCCT";
-  // ledType.type = "AAAAAA";
+  // ledType.name = F("PWM RGB+DCCT");
+  // ledType.type = F("AAAAAA");
   // result.push_back(ledType);
 
   return result;
@@ -720,8 +727,9 @@ std::vector<LEDType> BusOnOff::getLEDTypes() {
   std::vector<LEDType> result;
   LEDType ledType;
   ledType.id = 40;
-  ledType.name = "On/Off";
+  ledType.name = F("On/Off");
   ledType.type = "";
+  ledType.config = F("{\"pins\":[\"GPIO Pin\"]}");
   result.push_back(ledType);
   return result;
 
@@ -791,26 +799,28 @@ std::vector<LEDType> BusNetwork::getLEDTypes() {
   std::vector<LEDType> result;
   LEDType ledType;
 
-  ledType.type = "V";
+  ledType.config = F("{\"pins\":[\"IP Address\"]}");
+
+  ledType.type = F("V");
 
   ledType.id = 80;
-  ledType.name = "DDP RGB (network)";
+  ledType.name = F("DDP RGB (network)");
   result.push_back(ledType);
 
   // ledType.id = 81";
-  // ledType.name = "E1.31 RGB (network)";
+  // ledType.name = F("E1.31 RGB (network)");
   // result.push_back(ledType);
 
   ledType.id = 82;
-  ledType.name = "Art-Net RGB (network)";
+  ledType.name = F("Art-Net RGB (network)");
   result.push_back(ledType);
 
   ledType.id = 88;
-  ledType.name = "DDP RGBW (network)";
+  ledType.name = F("DDP RGBW (network)");
   result.push_back(ledType);
 
   ledType.id = 89;
-  ledType.name = "Art-Net RGBW (network)";
+  ledType.name = F("Art-Net RGBW (network)");
   result.push_back(ledType);
 
   return result;
@@ -1119,7 +1129,7 @@ String BusManager::getLEDTypes() {
   for(int t = 0; t < types.size(); t++) {
     LEDType type = types.at(t);
     String id = String(type.id);
-    json += "{\"id\":"+id+",\"type\":\""+type.type+"\",\"name\":\""+type.name+"\"},";
+    json += "{\"id\":"+id+",\"type\":\""+type.type+"\",\"name\":\""+type.name+"\",\"config\":"+type.config+"},";
   }
 
   json += "]";
