@@ -840,22 +840,10 @@ BusHub75Matrix::BusHub75Matrix(BusConfig &bc) : Bus(bc.type, bc.start, bc.autoWh
 
   mxconfig.double_buff = true; // <------------- Turn on double buffer
 
-  switch(bc.type) {
-    case 101:
-      mxconfig.mx_width = 32;
-      mxconfig.mx_height = 32;
-      break;
-    case 102:
-      mxconfig.mx_width = 64;
-      mxconfig.mx_height = 32;
-      break;
-    case 103:
-      mxconfig.mx_width = 64;
-      mxconfig.mx_height = 64;
-      break;
-  }
-
   mxconfig.chain_length = max((u_int8_t) 1, min(bc.pins[0], (u_int8_t) 4)); // prevent bad data preventing boot due to low memory
+
+  mxconfig.mx_width = bc.pins[1];
+  mxconfig.mx_height = bc.pins[2];
 
   if(mxconfig.mx_width >= 64 && (bc.pins[0] > 1)) {
     DEBUG_PRINTF("WARNING, only single panel can be used of 64 pixel boards due to memory")
@@ -1027,31 +1015,12 @@ std::vector<LEDType> BusHub75Matrix::getLEDTypes() {
   std::vector<LEDType> result;
   LEDType ledType;
 
-  ledType.type = "V";
+  ledType.type = "H";
+  ledType.config = F("{\"pins\":[\"Chain Length\",\"Width x Height\",\"x\"]}");
 
-  ledType.id = 101;
-  ledType.name = "Hub75Matrix 32x32";
+  ledType.id = TYPE_HUB75MATRIX;
+  ledType.name = "HUB 75 Matrix";
   result.push_back(ledType);
-
-  ledType.id = 102;
-  ledType.name = "Hub75Matrix 64x32";
-  result.push_back(ledType);
-
-  ledType.id = 103;
-  ledType.name = "Hub75Matrix 64x64";
-  result.push_back(ledType);
-
-  // ledType.id = 104;
-  // ledType.name = "Hub75Matrix 32x32 (Outdoor 8S)";
-  // result.push_back(ledType);
-
-  // ledType.id = 105;
-  // ledType.name = "Hub75Matrix 64x32 (Outdoor 8S)";
-  // result.push_back(ledType);
-
-  // ledType.id = 106;
-  // ledType.name = "Hub75Matrix 64x64 (Outdoor 16S)";
-  // result.push_back(ledType);
 
   return result;
 }
