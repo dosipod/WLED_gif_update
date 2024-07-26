@@ -3,12 +3,12 @@
 /*
    Main sketch, global variable declarations
    @title WLED project sketch
-   @version 0.15.0-b3
+   @version 0.15.0-b4
    @author Christian Schwinne
  */
 
 // version code in format yymmddb (b = daily build)
-#define VERSION 2404120
+#define VERSION 2407070
 
 //uncomment this if you have a "my_config.h" file you'd like to use
 //#define WLED_USE_MY_CONFIG
@@ -245,27 +245,32 @@ using PSRAMDynamicJsonDocument = BasicJsonDocument<PSRAM_Allocator>;
 //     int arr[]{0,1,2} becomes WLED_GLOBAL int arr[] _INIT_N(({0,1,2}));
 
 #ifndef WLED_DEFINE_GLOBAL_VARS
-# define WLED_GLOBAL extern
-# define _INIT(x)
-# define _INIT_N(x)
+  #define WLED_GLOBAL extern
+  #define _INIT(x)
+  #define _INIT_N(x)
+  #define _INIT_PROGMEM(x)
 #else
-# define WLED_GLOBAL
-# define _INIT(x) = x
-
-//needed to ignore commas in array definitions
-#define UNPACK( ... ) __VA_ARGS__
-# define _INIT_N(x) UNPACK x
+  #define WLED_GLOBAL
+  #define _INIT(x) = x
+  //needed to ignore commas in array definitions
+  #define UNPACK( ... ) __VA_ARGS__
+  #define _INIT_N(x) UNPACK x
+  #define _INIT_PROGMEM(x) PROGMEM = x
 #endif
 
 #define STRINGIFY(X) #X
 #define TOSTRING(X) STRINGIFY(X)
 
 #ifndef WLED_VERSION
-  #define WLED_VERSION "dev"
+  #define WLED_VERSION dev
+#endif
+#ifndef WLED_RELEASE_NAME
+  #define WLED_RELEASE_NAME dev_release
 #endif
 
 // Global Variable definitions
 WLED_GLOBAL char versionString[] _INIT(TOSTRING(WLED_VERSION));
+WLED_GLOBAL char releaseString[] _INIT(TOSTRING(WLED_RELEASE_NAME)); // somehow this will not work if using "const char releaseString[]
 #define WLED_CODENAME "Kōsen"
 
 // AP and OTA default passwords (for maximum security change them!)
@@ -289,6 +294,12 @@ WLED_GLOBAL int8_t rlyPin _INIT(RLYPIN);
 WLED_GLOBAL bool rlyMde _INIT(true);
 #else
 WLED_GLOBAL bool rlyMde _INIT(RLYMDE);
+#endif
+//Use open drain (floating pin) when relay should be off
+#ifndef RLYODRAIN
+WLED_GLOBAL bool rlyOpenDrain _INIT(false);
+#else
+WLED_GLOBAL bool rlyOpenDrain _INIT(RLYODRAIN);
 #endif
 #ifndef IRPIN
   #define IRPIN -1
@@ -324,6 +335,13 @@ WLED_GLOBAL byte apBehavior      _INIT(AP_BEHAVIOR_BOOT_NO_CONN); // access poin
 WLED_GLOBAL bool noWifiSleep _INIT(true);                         // disabling modem sleep modes will increase heat output and power usage, but may help with connection issues
 #else
 WLED_GLOBAL bool noWifiSleep _INIT(false);
+#endif
+#ifdef ARDUINO_ARCH_ESP32
+  #if defined(LOLIN_WIFI_FIX) && (defined(ARDUINO_ARCH_ESP32C3) || defined(ARDUINO_ARCH_ESP32S2) || defined(ARDUINO_ARCH_ESP32S3))
+WLED_GLOBAL uint8_t txPower _INIT(WIFI_POWER_8_5dBm);
+  #else
+WLED_GLOBAL uint8_t txPower _INIT(WIFI_POWER_19_5dBm);
+  #endif
 #endif
 WLED_GLOBAL bool force802_3g _INIT(false);
 #define WLED_WIFI_CONFIGURED (strlen(multiWiFi[0].clientSSID) >= 1 && strcmp(multiWiFi[0].clientSSID, DEFAULT_CLIENT_SSID) != 0)
@@ -636,6 +654,7 @@ WLED_GLOBAL byte timerWeekday[]   _INIT_N(({ 255, 255, 255, 255, 255, 255, 255, 
 WLED_GLOBAL byte timerMonth[]     _INIT_N(({28,28,28,28,28,28,28,28}));
 WLED_GLOBAL byte timerDay[]       _INIT_N(({1,1,1,1,1,1,1,1}));
 WLED_GLOBAL byte timerDayEnd[]		_INIT_N(({31,31,31,31,31,31,31,31}));
+WLED_GLOBAL bool doAdvancePlaylist _INIT(false);
 
 //improv
 WLED_GLOBAL byte improvActive _INIT(0); //0: no improv packet received, 1: improv active, 2: provisioning
@@ -745,6 +764,7 @@ WLED_GLOBAL WS2812FX strip _INIT(WS2812FX());
 WLED_GLOBAL BusConfig* busConfigs[WLED_MAX_BUSSES+WLED_MIN_VIRTUAL_BUSSES] _INIT({nullptr}); //temporary, to remember values from network callback until after
 WLED_GLOBAL bool doInitBusses _INIT(false);
 WLED_GLOBAL int8_t loadLedmap _INIT(-1);
+WLED_GLOBAL uint8_t currentLedmap _INIT(0);
 #ifndef ESP8266
 WLED_GLOBAL char  *ledmapNames[WLED_MAX_LEDMAPS-1] _INIT_N(({nullptr}));
 #endif
