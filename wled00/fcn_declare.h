@@ -20,6 +20,7 @@ void doublePressAction(uint8_t b=0);
 bool isButtonPressed(uint8_t b=0);
 void handleButton();
 void handleIO();
+void IRAM_ATTR touchButtonISR();
 
 //cfg.cpp
 bool deserializeConfig(JsonObject doc, bool fromFS = false);
@@ -48,6 +49,21 @@ bool getJsonValue(const JsonVariant& element, DestType& destination, const Defau
   return true;
 }
 
+typedef struct WiFiConfig {
+  char clientSSID[33];
+  char clientPass[65];
+  IPAddress staticIP;
+  IPAddress staticGW;
+  IPAddress staticSN;
+  WiFiConfig(const char *ssid="", const char *pass="", uint32_t ip=0, uint32_t gw=0, uint32_t subnet=0x00FFFFFF) // little endian
+  : staticIP(ip)
+  , staticGW(gw)
+  , staticSN(subnet)
+  {
+    strncpy(clientSSID, ssid, 32); clientSSID[32] = 0;
+    strncpy(clientPass, pass, 64); clientPass[64] = 0;
+  }
+} wifi_config;
 
 //colors.cpp
 // similar to NeoPixelBus NeoGammaTableMethod but allows dynamic changes (superseded by NPB::NeoGammaDynamicTableMethod)
@@ -65,6 +81,8 @@ class NeoGammaWLEDMethod {
 uint32_t color_blend(uint32_t,uint32_t,uint16_t,bool b16=false);
 uint32_t color_add(uint32_t,uint32_t, bool fast=false);
 uint32_t color_fade(uint32_t c1, uint8_t amount, bool video=false);
+CRGBPalette16 generateHarmonicRandomPalette(CRGBPalette16 &basepalette);
+CRGBPalette16 generateRandomPalette(void);
 inline uint32_t colorFromRgbw(byte* rgbw) { return uint32_t((byte(rgbw[3]) << 24) | (byte(rgbw[0]) << 16) | (byte(rgbw[1]) << 8) | (byte(rgbw[2]))); }
 void colorHStoRGB(uint16_t hue, byte sat, byte* rgb); //hue, sat to rgb
 void colorKtoRGB(uint16_t kelvin, byte* rgb);
@@ -95,6 +113,10 @@ bool readObjectFromFileUsingId(const char* file, uint16_t id, JsonDocument* dest
 bool readObjectFromFile(const char* file, const char* key, JsonDocument* dest);
 void updateFSInfo();
 void closeFile();
+inline bool writeObjectToFileUsingId(const String &file, uint16_t id, JsonDocument* content) { return writeObjectToFileUsingId(file.c_str(), id, content); };
+inline bool writeObjectToFile(const String &file, const char* key, JsonDocument* content) { return writeObjectToFile(file.c_str(), key, content); };
+inline bool readObjectFromFileUsingId(const String &file, uint16_t id, JsonDocument* dest) { return readObjectFromFileUsingId(file.c_str(), id, dest); };
+inline bool readObjectFromFile(const String &file, const char* key, JsonDocument* dest) { return readObjectFromFile(file.c_str(), key, dest); };
 
 //hue.cpp
 void handleHue();
@@ -103,6 +125,19 @@ void onHueError(void* arg, AsyncClient* client, int8_t error);
 void onHueConnect(void* arg, AsyncClient* client);
 void sendHuePoll();
 void onHueData(void* arg, AsyncClient* client, void *data, size_t len);
+
+#include "FX.h" // must be below colors.cpp declarations (potentially due to duplicate declarations of e.g. color_blend)
+
+//image_loader.cpp
+#ifndef WLED_DISABLE_GIF
+bool fileSeekCallback(unsigned long position);
+unsigned long filePositionCallback(void);
+int fileReadCallback(void);
+int fileReadBlockCallback(void * buffer, int numberOfBytes);
+int fileSizeCallback(void);
+byte renderImageToSegment(Segment &seg);
+void endImagePlayback(Segment* seg);
+#endif
 
 //improv.cpp
 enum ImprovRPCType {
@@ -121,27 +156,14 @@ void handleImprovWifiScan();
 void sendImprovIPRPCResult(ImprovRPCType type);
 
 //ir.cpp
-void applyRepeatActions();
-byte relativeChange(byte property, int8_t amount, byte lowerBoundary = 0, byte higherBoundary = 0xFF);
-void decodeIR(uint32_t code);
-void decodeIR24(uint32_t code);
-void decodeIR24OLD(uint32_t code);
-void decodeIR24CT(uint32_t code);
-void decodeIR40(uint32_t code);
-void decodeIR44(uint32_t code);
-void decodeIR21(uint32_t code);
-void decodeIR6(uint32_t code);
-void decodeIR9(uint32_t code);
-void decodeIRJson(uint32_t code);
-
 void initIR();
+void deInitIR();
 void handleIR();
 
 //json.cpp
 #include "ESPAsyncWebServer.h"
 #include "src/dependencies/json/ArduinoJson-v6.h"
 #include "src/dependencies/json/AsyncJson-v6.h"
-#include "FX.h"
 
 bool deserializeSegment(JsonObject elem, byte it, byte presetId = 0);
 bool deserializeState(JsonObject root, byte callMode = CALL_MODE_DIRECT_CHANGE, byte presetId = 0);
@@ -208,9 +230,11 @@ void handlePlaylist();
 void serializePlaylist(JsonObject obj);
 
 //presets.cpp
+const char *getPresetsFileName(bool persistent = true);
 void initPresetsFile();
 void handlePresets();
 bool applyPreset(byte index, byte callMode = CALL_MODE_DIRECT_CHANGE);
+bool applyPresetFromPlaylist(byte index);
 void applyPresetWithFallback(uint8_t presetID, uint8_t callMode, uint8_t effectID = 0, uint8_t paletteID = 0);
 inline bool applyTemporaryPreset() {return applyPreset(255);};
 void savePreset(byte index, const char* pname = nullptr, JsonObject saveobj = JsonObject());
@@ -219,7 +243,7 @@ void deletePreset(byte index);
 bool getPresetName(byte index, String& name);
 
 //remote.cpp
-void handleRemote();
+void handleRemote(uint8_t *data, size_t len);
 
 //set.cpp
 bool isAsterisksOnly(const char* str, byte maxLen);
@@ -235,6 +259,10 @@ void handleNotifications();
 void setRealtimePixel(uint16_t i, byte r, byte g, byte b, byte w);
 void refreshNodeList();
 void sendSysInfoUDP();
+#ifndef WLED_DISABLE_ESPNOW
+void espNowSentCB(uint8_t* address, uint8_t status);
+void espNowReceiveCB(uint8_t* address, uint8_t* data, uint8_t len, signed int rssi, bool broadcast);
+#endif
 
 //network.cpp
 int getSignalQuality(int rssi);
@@ -294,6 +322,7 @@ class Usermod {
     virtual bool readFromConfig(JsonObject& obj) { return true; } // Note as of 2021-06 readFromConfig() now needs to return a bool, see usermod_v2_example.h
     virtual void onMqttConnect(bool sessionPresent) {}                       // fired when MQTT connection is established (so usermod can subscribe)
     virtual bool onMqttMessage(char* topic, char* payload) { return false; } // fired upon MQTT message received (wled topic)
+    virtual bool onEspNowMessage(uint8_t* sender, uint8_t* payload, uint8_t len) { return false; } // fired upon ESP-NOW message received
     virtual void onUpdateBegin(bool) {}                                      // fired prior to and after unsuccessful firmware update
     virtual void onStateChange(uint8_t mode) {}                              // fired upon WLED state change
     virtual uint16_t getId() {return USERMOD_ID_UNSPECIFIED;}
@@ -317,8 +346,13 @@ class UsermodManager {
     void readFromJsonState(JsonObject& obj);
     void addToConfig(JsonObject& obj);
     bool readFromConfig(JsonObject& obj);
+#ifndef WLED_DISABLE_MQTT
     void onMqttConnect(bool sessionPresent);
     bool onMqttMessage(char* topic, char* payload);
+#endif
+#ifndef WLED_DISABLE_ESPNOW
+    bool onEspNowMessage(uint8_t* sender, uint8_t* payload, uint8_t len);
+#endif
     void onUpdateBegin(bool);
     void onStateChange(uint8_t);
     bool add(Usermod* um);
@@ -338,6 +372,7 @@ void userLoop();
 int getNumVal(const String* req, uint16_t pos);
 void parseNumber(const char* str, byte* val, byte minv=0, byte maxv=255);
 bool getVal(JsonVariant elem, byte* val, byte minv=0, byte maxv=255);
+bool getBoolVal(JsonVariant elem, bool dflt);
 bool updateVal(const char* req, const char* key, byte* val, byte minv=0, byte maxv=255);
 bool oappend(const char* txt); // append new c string to temp buffer efficiently
 bool oappendi(int i);          // append new number to temp buffer efficiently
@@ -381,7 +416,7 @@ void clearEEPROM();
 #endif
 
 //wled_math.cpp
-#ifndef WLED_USE_REAL_MATH
+#if defined(ESP8266) && !defined(WLED_USE_REAL_MATH)
   template <typename T> T atan_t(T x);
   float cos_t(float phi);
   float sin_t(float x);
@@ -392,14 +427,14 @@ void clearEEPROM();
   float fmod_t(float num, float denom);
 #else
   #include <math.h>
-  #define sin_t sin
-  #define cos_t cos
-  #define tan_t tan
-  #define asin_t asin
-  #define acos_t acos
-  #define atan_t atan
-  #define fmod_t fmod
-  #define floor_t floor
+  #define sin_t sinf
+  #define cos_t cosf
+  #define tan_t tanf
+  #define asin_t asinf
+  #define acos_t acosf
+  #define atan_t atanf
+  #define fmod_t fmodf
+  #define floor_t floorf
 #endif
 
 //wled_serial.cpp
@@ -407,15 +442,10 @@ void handleSerial();
 void updateBaudRate(uint32_t rate);
 
 //wled_server.cpp
-bool isIp(String str);
 void createEditHandler(bool enable);
-bool captivePortal(AsyncWebServerRequest *request);
 void initServer();
-void serveIndexOrWelcome(AsyncWebServerRequest *request);
-void serveIndex(AsyncWebServerRequest* request);
-String msgProcessor(const String& var);
 void serveMessage(AsyncWebServerRequest* request, uint16_t code, const String& headl, const String& subl="", byte optionT=255);
-String dmxProcessor(const String& var);
+void serveJsonError(AsyncWebServerRequest* request, uint16_t code, uint16_t error);
 void serveSettings(AsyncWebServerRequest* request, bool post = false);
 void serveSettingsJS(AsyncWebServerRequest* request);
 
@@ -426,7 +456,6 @@ void sendDataWs(AsyncWebSocketClient * client = nullptr);
 
 //xml.cpp
 void XML_response(AsyncWebServerRequest *request, char* dest = nullptr);
-void URL_response(AsyncWebServerRequest *request);
 void getSettingsJS(byte subPage, char* dest);
 
 #endif
