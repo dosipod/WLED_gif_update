@@ -234,6 +234,10 @@
 #include "../usermods/LD2410_v2/usermod_ld2410.h"
 #endif
 
+#ifdef USERMOD_BUSSTATUS
+  #include "../usermods/usermod_v2_busstatus/usermod_v2_busstatus.h"
+#endif
+
 void registerUsermods()
 {
 /*
