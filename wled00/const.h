@@ -319,8 +319,8 @@
 #define TYPE_NET_ARTNET_RGBW     89            //network ArtNet RGB bus (master broadcast bus, unused)
 
 #define IS_TYPE_VALID(t) ((t) > 15 && (t) < 128)
-#define IS_DMX(t) ((t) >= TYPE_DMX_OUT && (t) <= TYPE_DMX_IN)
 #define IS_DIGITAL(t)    (((t) > 15 && (t) < 40) || ((t) > 47 && (t) < 64)) //digital are 16-39 and 48-63
+#define IS_DMX(t) ((t) >= TYPE_DMX_OUT && (t) <= TYPE_DMX_IN)
 #define IS_2PIN(t)       ((t) > 47 && (t) < 64)
 #define IS_16BIT(t)      ((t) == TYPE_UCS8903 || (t) == TYPE_UCS8904)
 #define IS_ONOFF(t)      ((t) == 40)
