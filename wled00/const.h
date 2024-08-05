@@ -270,7 +270,7 @@
 //                                              - 0b001 (dec. 16-31) digital (data pin only)
 //                                              - 0b010 (dec. 32-47) analog (PWM)
 //                                              - 0b011 (dec. 48-63) digital (data + clock / SPI)
-//                                              - 0b100 (dec. 64-79) unused/reserved
+//                                              - 0b100 (dec. 64-79) other digital
 //                                              - 0b101 (dec. 80-95) virtual network busses
 //                                              - 0b110 (dec. 96-111) unused/reserved
 //                                              - 0b111 (dec. 112-127) unused/reserved
@@ -308,6 +308,9 @@
 #define TYPE_LPD8806             52
 #define TYPE_P9813               53
 #define TYPE_LPD6803             54
+//Other digital (IS_DIGITAL is false, requires custom Bus class) (64-79)
+#define TYPE_DMX_OUT             64            //DMX requires a hardware UART. TX and Direction pins
+#define TYPE_DMX_IN              65            //RX and Direction pins
 //Network types (master broadcast) (80-95)
 #define TYPE_NET_DDP_RGB         80            //network DDP RGB bus (master broadcast bus)
 #define TYPE_NET_E131_RGB        81            //network E131 RGB bus (master broadcast bus, unused)
@@ -316,6 +319,7 @@
 #define TYPE_NET_ARTNET_RGBW     89            //network ArtNet RGB bus (master broadcast bus, unused)
 
 #define IS_TYPE_VALID(t) ((t) > 15 && (t) < 128)
+#define IS_DMX(t) ((t) >= TYPE_DMX_OUT && (t) <= TYPE_DMX_IN)
 #define IS_DIGITAL(t)    (((t) > 15 && (t) < 40) || ((t) > 47 && (t) < 64)) //digital are 16-39 and 48-63
 #define IS_2PIN(t)       ((t) > 47 && (t) < 64)
 #define IS_16BIT(t)      ((t) == TYPE_UCS8903 || (t) == TYPE_UCS8904)
