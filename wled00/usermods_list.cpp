@@ -454,4 +454,8 @@ void registerUsermods()
   #ifdef USERMOD_LD2410
   usermods.add(new LD2410Usermod());
   #endif
+
+  #ifdef USERMOD_BUSSTATUS
+  usermods.add(new BusStatusUsermod());
+  #endif
 }
