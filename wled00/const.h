@@ -200,7 +200,7 @@
 #define USERMOD_ID_INA226                50     //Usermod "usermod_ina226.h"
 #define USERMOD_ID_AHT10                 51     //Usermod "usermod_aht10.h"
 #define USERMOD_ID_LD2410                52     //Usermod "usermod_ld2410.h"
-
+#define USERMOD_ID_BUSSTATUS             53     //Usermod "usermod_v2_busstatus.h"
 //Access point behavior
 #define AP_BEHAVIOR_BOOT_NO_CONN          0     //Open AP when no connection after boot
 #define AP_BEHAVIOR_NO_CONN               1     //Open when no connection (either after boot or if connection is lost)
