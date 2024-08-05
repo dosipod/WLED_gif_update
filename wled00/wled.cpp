@@ -1050,10 +1050,10 @@ void WLED::handleStatusLED()
 
   if (WLED_CONNECTED) {
     c = RGBW32(0,255,0,0);
-    ledStatusType = 0;
+    ledStatusType = 2;
   } else if (WLED_MQTT_CONNECTED) {
     c = RGBW32(0,128,0,0);
-    ledStatusType = 0;
+    ledStatusType = 4;
   } else if (apActive) {
     c = RGBW32(0,0,255,0);
     ledStatusType = 1;
